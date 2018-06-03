@@ -1,0 +1,7 @@
+MONGO_URL = '192.168.1.110'
+MONGO_DB = 'toutiao'
+MONGO_TABLE = 'toutiao'
+
+START_PAGE = 1
+STOP_PAGE = 20
+KEYWORD='出关'
