@@ -186,29 +186,89 @@
 
 
 
-class Foo(object):
-    def __init__(self):
-        print('in init--')
-
-    def __new__(cls, *args, **kwargs):
-        print('in new------')
-        # return object.__new__(cls)
-
-    def __call__(self, *args, **kwargs):
-        print('in call===============')
-
-obj = Foo()
-obj()
-
-
-
-
-
+import tesserocr
+from PIL import Image
+# image = Image.open('getAuthCode.jpg')
+image = Image.open('222.jpg')
+image = image.convert('L')
+threshold = 127
+table = []
+for i in range(256):
+    if i < threshold:
+        table.append(0)
+    else:
+        table.append(1)
+image = image.point(table, '1')
+# image.show()
+result = tesserocr.image_to_text(image)
+print(result)
 
 
 
 
 
+
+# from PIL import Image
+# import tesserocr
+# p1 = Image.open('222.jpg')
+#
+# threshold = 127
+#
+# def binarizing(img,threshold):
+#     """传入image对象进行灰度、二值处理"""
+#     img = p1.convert("L")  # 转灰度
+#     pixdata = img.load()
+#     w, h = img.size
+#     threshold = 127
+#
+#     for y in range(h):
+#         for x in range(w):
+#             if pixdata[x, y] < threshold:
+#                 pixdata[x, y] = 0
+#             else:
+#                 pixdata[x, y] = 255
+#     return img
+#
+#
+#
+# def depoint(img):
+#     '''传入二值化后的图片进行降噪'''
+#     pixdata = img.load()
+#     w,h = img.size
+#     for y in range(1,h-1):
+#         for x in range(1,w-1):
+#             count = 0
+#             if pixdata[x,y-1] > 245:#上
+#                 count = count + 1
+#             if pixdata[x,y+1] > 245:#下
+#                 count = count + 1
+#             if pixdata[x-1,y] > 245:#左
+#                 count = count + 1
+#             if pixdata[x+1,y] > 245:#右
+#                 count = count + 1
+#             if pixdata[x-1,y-1] > 245:#左上
+#                 count = count + 1
+#             if pixdata[x-1,y+1] > 245:#左下
+#                 count = count + 1
+#             if pixdata[x+1,y-1] > 245:#右上
+#                 count = count + 1
+#             if pixdata[x+1,y+1] > 245:#右下
+#                 count = count + 1
+#             if count > 4:
+#                 pixdata[x,y] = 255
+#     return img
+#
+#
+# img = binarizing(p1, threshold)
+#
+# img = depoint(img) # 可以多次降噪
+# # img = depoint(img)
+# # img = depoint(img)
+# img = depoint(img)
+#
+# # img.show()
+# ret = tesserocr.image_to_text(img)
+# print(ret)
 
 
 
