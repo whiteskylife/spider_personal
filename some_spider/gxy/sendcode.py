@@ -6,7 +6,7 @@ from urllib.parse import urlencode
 base_url = 'https://www.gxyclub.com/sendMsgCode'
 
 data = {
-    'mobilePhone': 13069647090,
+    'mobilePhone': 13012347090,
     'authCode': 1616,
 }
 
