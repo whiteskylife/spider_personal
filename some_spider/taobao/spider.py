@@ -7,7 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import re
 from pyquery import PyQuery as pq
-from config import *
+from some_spider.taobao.config import *
 import pymongo
 
 client = pymongo.MongoClient(MONGO_URL)
@@ -38,7 +38,7 @@ def search(value):
         get_products()
         return total_page.text
     except TimeoutException:
-        return search()
+        return search(SEARCH_CONTENT)
 
 
 def next_page(page_number):
