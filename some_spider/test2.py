@@ -69,17 +69,111 @@ from scrapyd_api import ScrapydAPI
 
 
 
-val = {'path': '123'}
-ret = val['path']
-print(ret)
+# val = {'path': '123'}
+# ret = val['path']
+# print(ret)
+#
 
 
 
 
+# import requests
+# from urllib.parse import urlencode
+# base_url = 'http://op.juhe.cn/onebox/stock/query?'
+# key = '阿里巴巴'
+# params = {
+#     'key': '8bcb478d3704170298e1aa1c7f5c6a19',
+#     'stock': key,
+# }
+# url = base_url + urlencode(params)
+# print(url)
+# # ret = requests.get(url)
+# ret = requests.get(base_url, params=params)
+# print(ret.json())
+# print(type(ret.json()))
+#
+import threading
+import requests
+from queue import Queue
+from lxml import etree
 
 
+class Spider(threading.Thread):
+    def __init__(self, threadname, u_queue, h_queue):
+        threading.Thread.__init__(self)
+        self.u_queue = u_queue
+        self.h_queue = h_queue
+        self.threadname = threadname
+
+    def run(self):
+        print(self.threadname + ":正在获取")
+        headers = {"User-Agent": "Mozilla/4.0(compatible;MSIE7.0;WindowsNT5.1;Maxthon2.0)"}
+        while not self.u_queue.empty():
+            response = requests.get(self.u_queue.get(), headers=headers)
+            html = response.text
+            self.h_queue.put(html)
 
 
+class ParseInfo(threading.Thread):
+    def __init__(self, threadname, h_queue, filename, lock):
+        threading.Thread.__init__(self)
+        self.h_queue = h_queue
+        self.filename = filename
+        self.lock = lock
+        self.threadname = threadname
+
+    def run(self):
+        print(self.threadname + ":正在解析")
+        while not self.h_queue.empty():
+            e = etree.HTML(self.h_queue.get())
+            infos = e.xpath('//div[@id="content-left"]//div[@class="content"]/span/text()')
+
+            if self.lock.acquire():
+                for info in infos:
+                    self.filename.write(info)
+                self.lock.release()
+
+# //div[@id="content-left"]//div[@class="content"]/span/text()
+
+def main(num):
+    url_queue = Queue()
+    html_queue = Queue()
+    url = "https://www.qiushibaike.com/8hr/page/{}/"
+    filename = open("qiushi.html", "a", encoding='utf-8')
+    for i in range(1, num + 1):
+        new_url = url.format(i)
+        url_queue.put(new_url)
+
+    spider1 = Spider("1号", url_queue, html_queue)
+    spider2 = Spider("2号", url_queue, html_queue)
+    spider3 = Spider("3号", url_queue, html_queue)
+    spider_array = []
+    spider_array.append(spider1)
+    spider_array.append(spider2)
+    spider_array.append(spider3)
+
+    for s in spider_array:
+        s.start()
+
+    for s in spider_array:
+        s.join()
+
+    lock = threading.Lock()
+    parse1 = ParseInfo("4号", html_queue, filename, lock)
+    parse2 = ParseInfo("5号", html_queue, filename, lock)
+    parse3 = ParseInfo("6号", html_queue, filename, lock)
+    parese_array = []
+    parese_array.extend([parse1,parse2,parse3])
+    for p in parese_array:
+        p.start()
+
+    for p in parese_array:
+        p.join()
+    threading.Lock()
+    filename.close()
 
 
-
+if __name__ == '__main__':
+    num = 1
+    # num = int(input("请输入要下载几页:"))
+    main(num)
